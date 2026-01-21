@@ -1,4 +1,4 @@
-# 🤖 Robotic Arm Object Sorting System
+# Robotic Arm Object Sorting System
 
 A 4-DOF robotic arm controller for Raspberry Pi that uses computer vision to detect, pick up, and sort objects (tomatoes and potatoes) into separate boxes.
 
@@ -6,7 +6,7 @@ A 4-DOF robotic arm controller for Raspberry Pi that uses computer vision to det
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green)
 ![Docker](https://img.shields.io/badge/Docker-Ready-blue)
 
-## ✨ Features
+## Features
 
 - **Object Detection**: Uses OpenCV to detect red (tomatoes) and yellow/brown (potatoes) objects
 - **4-DOF Arm Control**: Controls Base, Shoulder, Elbow, and Gripper servos
@@ -14,7 +14,7 @@ A 4-DOF robotic arm controller for Raspberry Pi that uses computer vision to det
 - **3D Simulation**: Realistic 3D visualization with Matplotlib (no hardware needed!)
 - **Docker Support**: Easy deployment on Raspberry Pi
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 se_project/
@@ -33,7 +33,7 @@ se_project/
 └── requirements.txt
 ```
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Run the 3D Simulation (No Hardware Required)
 
@@ -80,7 +80,7 @@ Edit `src/vision.py` to adjust:
 - HSV color ranges for tomato/potato detection
 - Minimum area threshold
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 # Run all tests
@@ -89,23 +89,23 @@ python tests/verify_kinematics.py
 python tests/verify_simulation.py
 ```
 
-## 📦 Dependencies
+##  Dependencies
 
 - `opencv-python-headless` - Computer vision
 - `gpiozero` - GPIO control
 - `numpy` - Numerical operations
 - `matplotlib` - 3D visualization
 
-## 🎮 Controls (3D Simulation)
+##  Controls (3D Simulation)
 
 - **Rotate View**: Click and drag
 - **Zoom**: Scroll wheel
 - **Quit**: Close window
 
-## 📄 License
+##  License
 
 MIT License
 
-## 👤 Author
+##  Author
 
 Ali Aqil
