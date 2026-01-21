@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  robotic-arm:
+    build: .
+    container_name: robotic_arm_controller
+    privileged: true  # Required for hardware access (GPIO, Camera)
+    devices:
+      - /dev/gpiomem:/dev/gpiomem
+      - /dev/video0:/dev/video0
+    volumes:
+      - ./src:/app/src  # Mount source for development
+    restart: unless-stopped

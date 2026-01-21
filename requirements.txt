@@ -1,0 +1,5 @@
+opencv-python-headless
+gpiozero
+rpi.gpio
+numpy
+matplotlib
