@@ -14,6 +14,7 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import matplotlib.animation as animation
 import math
 import random
+from config import OBJECT_TYPES, get_color_name_for_label, get_box_for_label
 
 # ============================================================================
 # HELPER FUNCTIONS FOR 3D SHAPES
@@ -190,8 +191,8 @@ class Simulation3D:
         
         # Box positions (center x, y, z) and sizes
         self.source_box = {"center": (25, 0, 0), "size": (15, 15, 8), "color": "gray"}
-        self.box_a = {"center": (-20, 20, 0), "size": (12, 12, 8), "color": "red", "label": "Box A\n(Tomatoes)"}
-        self.box_b = {"center": (-20, -20, 0), "size": (12, 12, 8), "color": "goldenrod", "label": "Box B\n(Potatoes)"}
+        self.box_a = {"center": (-20, 20, 0), "size": (12, 12, 8), "color": "red", "label": "Box A"}
+        self.box_b = {"center": (-20, -20, 0), "size": (12, 12, 8), "color": "goldenrod", "label": "Box B"}
         
         # Objects in source box
         self.objects = []
@@ -206,13 +207,13 @@ class Simulation3D:
         self.wait_frames = 0
         
     def _spawn_objects(self, count):
-        """Spawn objects in the source box."""
+        """Spawn objects in the source box (generalized: any type from config)."""
         cx, cy, cz = self.source_box["center"]
         sx, sy, sz = self.source_box["size"]
         
         for _ in range(count):
-            obj_type = random.choice(["tomato", "potato"])
-            color = "red" if obj_type == "tomato" else "goldenrod"
+            obj_type = random.choice(OBJECT_TYPES)
+            color = get_color_name_for_label(obj_type)
             
             x = cx + random.uniform(-sx/3, sx/3)
             y = cy + random.uniform(-sy/3, sy/3)
@@ -272,10 +273,9 @@ class Simulation3D:
             if reached:
                 self.arm.state = "MOVING_TO_BOX"
                 if self.arm.holding_object:
-                    if self.arm.holding_object["type"] == "tomato":
-                        self.arm.target_base = 135
-                    else:
-                        self.arm.target_base = -135
+                    # Generalized: any object type → box via config
+                    box_id = get_box_for_label(self.arm.holding_object["type"])
+                    self.arm.target_base = 135 if box_id == "A" else -135
                         
         elif self.arm.state == "MOVING_TO_BOX":
             if reached:
@@ -291,7 +291,9 @@ class Simulation3D:
         elif self.arm.state == "DROPPING":
             if self.arm.holding_object:
                 obj = self.arm.holding_object
-                if obj["type"] == "tomato":
+                # Generalized: any object type → box via config
+                box_id = get_box_for_label(obj["type"])
+                if box_id == "A":
                     cx, cy, cz = self.box_a["center"]
                     obj["pos"] = np.array([cx + random.uniform(-3, 3), 
                                            cy + random.uniform(-3, 3), 

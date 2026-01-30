@@ -2,6 +2,7 @@ import cv2
 import time
 from motor_control import RoboticArm
 from vision import ObjectDetector
+from config import get_box_for_label, get_color_for_label, get_base_angle_for_box
 
 def main():
     print("Initializing Robotic Arm System...")
@@ -32,8 +33,8 @@ def main():
                 cx, cy, area, label = result
                 print(f"Object detected: {label} at x={cx}, y={cy}, area={area}")
 
-                # Draw bounding circle for visualization
-                color = (0, 0, 255) if label == "tomato" else (0, 255, 255)
+                # Draw bounding circle for visualization (generalized for any label)
+                color = get_color_for_label(label)
                 cv2.circle(frame, (cx, cy), 10, color, -1)
                 cv2.putText(frame, label, (cx - 20, cy - 20), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, 2)
                 
@@ -56,7 +57,7 @@ def main():
                         arm.move_base(current_angle + 5) # Move right
                 else:
                     print(f"{label.capitalize()} centered! Initiating pick sequence...")
-                    # Hardcoded pick sequence for demonstration
+                    # Pick sequence for any object type
                     # 1. Extend arm
                     arm.move_shoulder(45)
                     arm.move_elbow(-45)
@@ -71,13 +72,11 @@ def main():
                     arm.move_elbow(0)
                     time.sleep(1)
                     
-                    # 4. Move to Box
-                    if label == "tomato":
-                        print("Sorting Tomato to Box A (Left)")
-                        arm.move_base(90)
-                    else:
-                        print("Sorting Potato to Box B (Right)")
-                        arm.move_base(-90)
+                    # 4. Move to Box (generalized: any label → box via config)
+                    box_id = get_box_for_label(label)
+                    angle = get_base_angle_for_box(box_id)
+                    print(f"Sorting {label} to Box {box_id}")
+                    arm.move_base(angle)
                     
                     time.sleep(1)
                     

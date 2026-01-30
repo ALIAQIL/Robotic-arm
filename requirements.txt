@@ -3,3 +3,4 @@ gpiozero
 rpi.gpio
 numpy
 matplotlib
+ultralytics>=8.0.0

@@ -3,6 +3,7 @@ import numpy as np
 import time
 import random
 import math
+from config import OBJECT_TYPES, get_color_for_label, get_box_for_label
 
 class KinematicArm:
     def __init__(self):
@@ -104,7 +105,7 @@ def main():
     last_spawn_time = time.time()
     
     print("Starting Realistic Kinematic Simulation...")
-    print("Red = Tomato (Box A), Yellow = Potato (Box B)")
+    print("Objects generalized: any type → Box A or B via config")
     print("Press 'q' to quit.")
 
     while True:
@@ -112,10 +113,10 @@ def main():
         
         # --- Logic Update ---
         
-        # Spawn objects
+        # Spawn objects (generalized: any type from config)
         if not objects and time.time() - last_spawn_time > 2:
-            obj_type = random.choice(["tomato", "potato"])
-            color = (0, 0, 255) if obj_type == "tomato" else (0, 255, 255)
+            obj_type = random.choice(OBJECT_TYPES)
+            color = get_color_for_label(obj_type)
             # Spawn in front (Positive X), random Y
             obj_x = random.randint(100, 200)
             obj_y = random.randint(-50, 50)
@@ -167,12 +168,9 @@ def main():
             arm.target_elbow = -30
             if reached:
                 arm.state = "MOVING_TO_BOX"
-                if arm.holding_object["type"] == "tomato":
-                    # Move to Box A (Left -> +90 deg base)
-                    arm.target_base = 60 
-                else:
-                    # Move to Box B (Right -> -90 deg base)
-                    arm.target_base = -60
+                # Generalized: any object type → box via config
+                box_id = get_box_for_label(arm.holding_object["type"])
+                arm.target_base = 60 if box_id == "A" else -60
                     
         elif arm.state == "MOVING_TO_BOX":
             if reached:
