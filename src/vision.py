@@ -37,19 +37,17 @@ class ObjectDetector:
     def detect_object_ai(self, frame):
         """
         Detect objects using YOLO (any COCO class).
-        Returns (cx, cy, area, label) of the largest/most confident detection, or None.
+        Returns a list of (cx, cy, area, label, x1, y1, x2, y2) detections.
         """
         model = self._get_yolo_model()
         results = model(frame, verbose=False)
         if not results or not results[0].boxes:
-            return None
+            return []
 
         boxes = results[0].boxes
         names = results[0].names
+        detections = []
 
-        # Pick the detection with highest confidence (or largest area)
-        best = None
-        best_score = 0.0
         for i in range(len(boxes)):
             xyxy = boxes.xyxy[i].cpu().numpy()
             conf = float(boxes.conf[i].cpu().numpy())
@@ -57,23 +55,18 @@ class ObjectDetector:
             label = names.get(cls_id, f"class_{cls_id}")
             x1, y1, x2, y2 = xyxy
             area = (x2 - x1) * (y2 - y1)
-            # Score = confidence * log(area) to prefer both confident and reasonably large
-            score = conf * (1.0 + np.log1p(area) / 20.0)
-            if score > best_score and area > 500:
-                best_score = score
-                best = (x1, y1, x2, y2, area, label)
+            
+            if area > 500 and conf > 0.3:
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
+                detections.append((cx, cy, int(area), label, int(x1), int(y1), int(x2), int(y2)))
 
-        if best is None:
-            return None
-        x1, y1, x2, y2, area, label = best
-        cx = int((x1 + x2) / 2)
-        cy = int((y1 + y2) / 2)
-        return (cx, cy, int(area), label)
+        return detections
 
     def detect_object_color(self, frame):
         """
-        Detects the largest object (Tomato or Potato) using HSV color.
-        Returns (x, y, area, label) or None.
+        Detects objects (Tomato or Potato) using HSV color.
+        Returns a list of (cx, cy, area, label, x1, y1, x2, y2) detections.
         """
         hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
 
@@ -88,37 +81,38 @@ class ObjectDetector:
         mask_potato = cv2.morphologyEx(mask_potato, cv2.MORPH_OPEN, kernel)
         mask_potato = cv2.morphologyEx(mask_potato, cv2.MORPH_CLOSE, kernel)
 
-        contours_tomato, _ = cv2.findContours(mask_tomato, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
-        contours_potato, _ = cv2.findContours(mask_potato, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+        detections = []
 
-        largest_object = None
-        max_area = 0
-
-        for contours, label in [(contours_tomato, "tomato"), (contours_potato, "potato")]:
-            if contours:
-                c = max(contours, key=cv2.contourArea)
-                area = cv2.contourArea(c)
-                if area > 500 and area > max_area:
-                    max_area = area
-                    largest_object = (c, label)
-
-        if largest_object:
-            contour, label = largest_object
-            M = cv2.moments(contour)
-            if M["m00"] != 0:
-                cx = int(M["m10"] / M["m00"])
-                cy = int(M["m01"] / M["m00"])
-                return (cx, cy, int(max_area), label)
-        return None
+        for mask, label in [(mask_tomato, "tomato"), (mask_potato, "potato")]:
+            contours, _ = cv2.findContours(mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+            for contour in contours:
+                area = cv2.contourArea(contour)
+                if area > 500:
+                    x, y, w, h = cv2.boundingRect(contour)
+                    M = cv2.moments(contour)
+                    if M["m00"] != 0:
+                        cx = int(M["m10"] / M["m00"])
+                        cy = int(M["m01"] / M["m00"])
+                        detections.append((cx, cy, int(area), label, x, y, x + w, y + h))
+        
+        return detections
 
     def detect_object(self, frame):
         """
-        Detects the most prominent object in the frame.
+        Backward compatibility: Detects the most prominent object in the frame.
+        """
+        all_objs = self.detect_all_objects(frame)
+        if not all_objs:
+            return None
+        # Return the largest one
+        return max(all_objs, key=lambda x: x[2])[:4]
+
+    def detect_all_objects(self, frame):
+        """
+        Detects all prominent objects in the frame.
         Uses AI (YOLO) if use_ai=True and available, else color-based.
-        Returns (cx, cy, area, label) or None.
+        Returns a list of (cx, cy, area, label, x1, y1, x2, y2) detections.
         """
         if self.use_ai:
-            result = self.detect_object_ai(frame)
-            if result is not None:
-                return result
+            return self.detect_object_ai(frame)
         return self.detect_object_color(frame)

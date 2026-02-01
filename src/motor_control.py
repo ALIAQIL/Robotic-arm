@@ -1,12 +1,27 @@
-from gpiozero import AngularServo
-from gpiozero.pins.mock import MockFactory, MockPWMPin
-from gpiozero import Device
+try:
+    from gpiozero import AngularServo
+    from gpiozero.pins.mock import MockFactory, MockPWMPin
+    from gpiozero import Device
+    GPIO_AVAILABLE = True
+except ImportError:
+    GPIO_AVAILABLE = False
+    print("Warning: gpiozero not found. Running in mock mode.")
+
 import time
 import os
 
 # Check if running in simulation/mock mode
-if os.environ.get('GPIOZERO_PIN_FACTORY') == 'mock':
+if GPIO_AVAILABLE and os.environ.get('GPIOZERO_PIN_FACTORY') == 'mock':
     Device.pin_factory = MockFactory(pin_class=MockPWMPin)
+
+class MockServo:
+    def __init__(self, *args, **kwargs):
+        self.angle = 0
+    def close(self):
+        pass
+
+if not GPIO_AVAILABLE:
+    AngularServo = MockServo
 
 class RoboticArm:
     def __init__(self, base_pin=17, shoulder_pin=27, elbow_pin=22, gripper_pin=23):
