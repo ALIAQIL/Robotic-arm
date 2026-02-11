@@ -1,18 +1,20 @@
-# Robotic Arm
+# Robotic Arm Object Sorting System
+
+![Robotic Arm](roboti-arm.jpeg)
 
 ## Introduction
+This project involves a robotic arm that can sort objects based on color. The arm uses computer vision to identify objects and an efficient sorting algorithm to categorize them.
 
-![Robotic Arm](https://raw.githubusercontent.com/ALIAQIL/Robotic-arm/main/robotic-arm.jpeg)
-
-This is a repository for controlling a robotic arm.
+## How it Works
+The robotic arm is controlled using an Arduino microcontroller, which works in conjunction with a camera to detect and classify objects.
 
 ## Features
-- Feature 1
-- Feature 2
+- Object detection and recognition
+- Automated sorting
+- User-friendly interface
+- Integration with various sensors
 
 ## Installation
-1. Step 1
-2. Step 2
-
-## Usage
-- Usage details ...
+To install the necessary software, follow these instructions:
+- Clone the repository: `git clone https://github.com/ALIAQIL/Robotic-arm.git`
+- Install dependencies: `pip install -r requirements.txt`
